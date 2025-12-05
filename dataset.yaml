@@ -1,5 +1,0 @@
-names: [person, weapon]
-nc: 2
-path: Dataset
-train: images
-val: images

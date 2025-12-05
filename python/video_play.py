@@ -10,9 +10,9 @@ def preprocess_image(image_ori) -> torch.Tensor:
     image_tensor = image_tensor.unsqueeze(0)
     return image_tensor, image_rgb
 
-torchmodel = torch.jit.load("best.torchscript", map_location='cuda')
+torchmodel = torch.jit.load("../best.torchscript", map_location='cuda')
 torchmodel.eval()
-cap = cv2.VideoCapture('evaluation.mp4')
+cap = cv2.VideoCapture('../evaluation.mp4')
 
 with torch.no_grad():
     while (cap.isOpened()):
@@ -25,7 +25,7 @@ with torch.no_grad():
             boxes = result[:4, :]
             person_prob = torch.argmax(result[4])
             gun_prob = torch.argmax(result[5])
-            if result[5][gun_prob] > 0.4:
+            if result[5][gun_prob] > 0.35:
                 box_np = boxes[:, gun_prob].cpu().numpy() if boxes[:, gun_prob].is_cuda else boxes[:, gun_prob].numpy()
                 x, y, w, h = box_np
                 x1 = int((x - w / 2))
