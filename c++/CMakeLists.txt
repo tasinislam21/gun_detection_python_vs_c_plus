@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(Train_MNIST)
+project(Detect_firearm)
 # -------------------------------
 
 # Find OpenCV
@@ -15,7 +15,7 @@ include_directories(${OpenCV_INCLUDE_DIRS} ../../c++_libraries/opencv/build)
 
 # -------------------------------
 
-set(Torch_DIR "../../c++_libraries/libtorch/share/cmake/Torch")
+set(Torch_DIR "../../c++_libraries/libtorch_13/share/cmake/Torch")
 find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
@@ -25,5 +25,5 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 # -------------------------------
 
-add_executable(Train_MNIST train_mnist.cpp)
-target_link_libraries(Train_MNIST ${OpenCV_LIBS} "${TORCH_LIBRARIES}")
+add_executable(Detect_firearm detect_firearm.cpp)
+target_link_libraries(Detect_firearm ${OpenCV_LIBS} "${TORCH_LIBRARIES}")
