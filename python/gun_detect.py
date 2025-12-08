@@ -40,7 +40,7 @@ with torch.no_grad():
                 y2 = int(y1 + h)
                 cv2.rectangle(image_rgb, (x1, y1), (x2, y2), (0, 0, 255), 2)
             duration_ms = (end_time - start_time) * 1000
-            text = f"Inference: {duration_ms:.2f} ms"
+            text = f"Inference: {duration_ms:.1f} ms"
             font = cv2.FONT_HERSHEY_SIMPLEX
             font_scale = 0.7
             thickness = 2

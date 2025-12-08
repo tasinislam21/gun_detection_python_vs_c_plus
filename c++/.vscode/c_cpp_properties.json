@@ -4,8 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/home/tasin/Documents/c++_libraries/libtorch/include",
-                "/home/tasin/Documents/c++_libraries/libtorch/include/torch/csrc/api/include",
+                "/home/tasin/Documents/c++_libraries/libtorch_13/include",
+                "/home/tasin/Documents/c++_libraries/libtorch_13/include/torch/csrc/api/include",
                 "/usr/include/opencv4"
             ],
             "defines": [],

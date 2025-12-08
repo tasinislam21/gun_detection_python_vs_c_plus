@@ -33,6 +33,7 @@ PreprocessResult preprocess_image(const cv::Mat& image_ori) {
 
 int main() {
     torch::Device device(torch::kCUDA);
+    //torch::Device device(torch::kCPU);
     torch::jit::script::Module model = torch::jit::load("../../best.torchscript", device=device);   
     std::cout << "Created model success!" << std::endl;
     cv::VideoCapture cap("../../evaluation.mp4");
