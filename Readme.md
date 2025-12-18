@@ -32,7 +32,10 @@ make
 # Finally run the application
 ./Detect_firearm
 ```
+## Results
+A significant difference in memory efficiency was measured: the Python implementation used approximately **25%** more memory than the C++ implementation.
 
+However, since both the Python and C++ implementations rely on the CUDA Toolkit, which uses a C/C++ compiler for kernel compilation, no noticeable difference in execution speed was observed on the GPU. 
 ## Acknowledgments
 
 * [Original Python code](https://www.kaggle.com/code/jirkaborovec/cctv-weapon-train-yolo-detection)

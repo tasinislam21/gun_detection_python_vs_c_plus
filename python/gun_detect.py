@@ -26,6 +26,7 @@ with torch.no_grad():
             image = image.to(device)
             start_time = time.time() 
             results = torchmodel(image)
+            print(results.shape)
             end_time = time.time()
             result = results[0]  # Remove the batch dimension if there's only one image
             boxes = result[:4, :]
@@ -48,6 +49,7 @@ with torch.no_grad():
             color = (0, 255, 0) # green (BGR)
             cv2.putText(image_rgb, text, org, font, font_scale, color, thickness)
             cv2.imshow('Frame', image_rgb)
+
             if cv2.waitKey(25) & 0xFF == ord('q'):
                 break
 
