@@ -25,5 +25,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 # -------------------------------
 
-add_executable(Detect_firearm detect_firearm.cpp)
+set(SOURCE_FILES 
+detect_firearm.cpp 
+nms.cpp)
+
+
+add_executable(Detect_firearm ${SOURCE_FILES})
 target_link_libraries(Detect_firearm ${OpenCV_LIBS} "${TORCH_LIBRARIES}")
