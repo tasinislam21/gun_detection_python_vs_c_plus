@@ -31,16 +31,19 @@ float iou(torch::Tensor box1, torch::Tensor box2) {
     return inter_area / union_area;
 }
 
-std::vector<int> non_max_suppression(const std::vector<torch::Tensor>& boxes, const std::vector<torch::Tensor>& scores, float iou_threshold){
-    std::vector<int> indices(scores.size());
+std::vector<int> non_max_suppression(const torch::Tensor& result, float iou_threshold){
+    std::vector<int> indices(result.size(1));
     std::vector<int> keep;
 
-    for (size_t i = 0; i < scores.size(); i++) {
+    for (size_t i = 0; i < indices.size(); i++) {
         indices[i] = i;
     }
-
-    std::vector<float> score_values(scores.size());
-    for (size_t i = 0; i < scores.size(); i++) {
+    torch::Tensor boxes = result.index({torch::indexing::Slice(0,4), torch::indexing::Slice()});
+    torch::Tensor scores = result.index({5, torch::indexing::Slice()});
+    
+    std::vector<float> score_values(scores.size(0));
+    
+    for (size_t i = 0; i < scores.size(0); i++) {
         score_values[i] = scores[i].item<float>();
     }
 
@@ -56,7 +59,7 @@ std::vector<int> non_max_suppression(const std::vector<torch::Tensor>& boxes, co
 
         std::vector<int> remaining;
         for (int i : indices) {
-            if (iou(boxes[current], boxes[i]) < iou_threshold) {
+            if (iou(boxes.index({torch::indexing::Slice(0,4), current}), boxes.index({torch::indexing::Slice(0,4), i})) < iou_threshold) {
                 remaining.push_back(i);
             }   
         }
