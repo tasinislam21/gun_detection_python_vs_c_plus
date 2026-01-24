@@ -3,16 +3,37 @@ from flask_socketio import SocketIO, emit
 import cv2
 import numpy as np
 import base64
-from gun_detect import preprocess_image, run_model, filter_result, get_distinct_indices, draw_bbox, put_inference_time
-import nms
+import PostProcess
+import torch
+import time
 
 app = Flask(__name__)
 socketio = SocketIO(app)
-device = 'cuda'
 
 # Frame skipping parameter
 frame_skip = 3
 frame_counter = 0
+
+device = 'cuda'
+torchmodel = torch.jit.load("../best.torchscript", map_location=device)
+torchmodel.eval()
+
+postprocessor = PostProcess.PostProcessor()
+
+def preprocess_image(image_ori) -> torch.Tensor:
+    image = cv2.resize(image_ori, (640, 640))
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image_tensor = torch.from_numpy(image_rgb).float()
+    image_tensor = image_tensor.permute(2, 0, 1)  # Change from HWC to CHW format
+    image_tensor = image_tensor / 255.0  # Normalize to [0, 1]
+    image_tensor = image_tensor.unsqueeze(0)
+    return image_tensor, image_rgb
+
+def run_model(image):
+    start_time = time.time()
+    result = torchmodel(image)[0]
+    end_time = time.time()
+    return result, (end_time - start_time) * 1000
 
 @app.route('/')
 def index():
@@ -26,43 +47,19 @@ def image(data_image):
     if frame_counter % frame_skip != 0:
         return  # Skip this frame
     
-    print("Received image data")
     # Decode the image from base64
     img_data = data_image.split(",")[1]
     img = base64.b64decode(img_data)
     npimg = np.frombuffer(img, dtype=np.uint8)
     frame = cv2.imdecode(npimg, 1)
-
     image, image_rgb = preprocess_image(frame)
     image = image.to(device)
-    result, duration_ms = run_model()
-    filtered_boxes, filtered_scores = filter_result()
-    distinct_indices = get_distinct_indices()
-    if len(filtered_boxes) > 0:
-        distinct_indices = nms.non_max_suppression(filtered_boxes, filtered_scores, iou_threshold=0.5)
-        nms_boxes = [filtered_boxes[i] for i in distinct_indices]
-    else:
-        nms_boxes = []
-    draw_bbox()
-    put_inference_time()
-
-
-    size = frame.shape
-    print(size)
-    # reduce the size of the frame to speed up the detection
-    frame = cv2.resize(frame, (int(size[1] / 1.5), int(size[0] / 1.5)))
-    print(frame.shape)
-    # Process the frame (e.g., convert to grayscale)
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_classifier.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(40, 40))
-    
-    for (x, y, w, h) in faces:
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 4)
-    
-    img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    
+    result, duration_ms = run_model(image)
+    postprocessor.set_image(image_rgb)
+    postprocessor.set_time(duration_ms)
+    postprocessor.set_result(result)
     # Encode the frame in JPEG format
-    _, buffer = cv2.imencode('.jpg', img_rgb)
+    _, buffer = cv2.imencode('.jpg', postprocessor.get_frame())
     frame_data = base64.b64encode(buffer).decode('utf-8')
     emit('response_back', 'data:image/jpeg;base64,' + frame_data)
     
