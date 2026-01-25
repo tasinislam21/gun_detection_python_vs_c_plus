@@ -12,13 +12,21 @@ socketio = SocketIO(app)
 
 # Frame skipping parameter
 frame_skip = 3
-frame_counter = 0
-
+frame_counter = -1
+frames = []
 device = 'cuda'
 torchmodel = torch.jit.load("../best.torchscript", map_location=device)
 torchmodel.eval()
 
 postprocessor = PostProcess.PostProcessor()
+
+cap = cv2.VideoCapture('../evaluation.mp4')
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
+    frames.append(frame)
+cap.release()
 
 def preprocess_image(image_ori) -> torch.Tensor:
     image = cv2.resize(image_ori, (640, 640))
@@ -40,19 +48,13 @@ def index():
     return render_template('index.html')
 
 @socketio.on('image')
-def image(data_image):
+def image():
     global frame_counter
+    if frame_counter == len(frames)-1:
+        frame_counter = -1
     frame_counter += 1
-    
-    if frame_counter % frame_skip != 0:
-        return  # Skip this frame
-    
-    # Decode the image from base64
-    img_data = data_image.split(",")[1]
-    img = base64.b64decode(img_data)
-    npimg = np.frombuffer(img, dtype=np.uint8)
-    frame = cv2.imdecode(npimg, 1)
-    image, image_rgb = preprocess_image(frame)
+
+    image, image_rgb = preprocess_image(frames[frame_counter])
     image = image.to(device)
     result, duration_ms = run_model(image)
     postprocessor.set_image(image_rgb)
@@ -65,4 +67,4 @@ def image(data_image):
     
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
