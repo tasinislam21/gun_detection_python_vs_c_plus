@@ -1,7 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 import cv2
-import numpy as np
 import base64
 import PostProcess
 import torch
