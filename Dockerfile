@@ -7,9 +7,11 @@ RUN pip install --no-cache-dir --break-system-packages numpy opencv-python openc
 
 RUN mkdir -p web_application
 
-ADD web_application web_application
-COPY evaluation.mp4 web_application
-COPY best.torchscript web_application
+COPY web_application /app/web_application
+COPY evaluation.mp4 /app/evaluation.mp4
+COPY best.torchscript /app/best.torchscript
 
 EXPOSE 5000
-CMD ["python", "web_application/app.py"]
+WORKDIR /app/web_application
+
+CMD ["python", "app.py"]
