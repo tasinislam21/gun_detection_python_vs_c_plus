@@ -38,7 +38,8 @@ def preprocess_image(image_ori) -> torch.Tensor:
 
 def run_model(image):
     start_time = time.time()
-    result = torchmodel(image)[0]
+    with torch.no_grad():
+        result = torchmodel(image)[0]
     end_time = time.time()
     return result, (end_time - start_time) * 1000
 
